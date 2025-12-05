@@ -300,11 +300,11 @@ class TreeVisitor(ABC):
 class CountLeavesVisitor(TreeVisitor):
     def __init__(self):
         self._leaf_count = 0
-    
+
     @property
     def leaf_count(self) -> int:
         return self._leaf_count
-    
+
     def visit_decision_node(self, decision_node: DecisionNode) -> None:
         print("Visitor para contar folhas está se propagando na árvore")
         node_children = decision_node.get_children()
@@ -312,5 +312,23 @@ class CountLeavesVisitor(TreeVisitor):
         node_children[1].accept(self)
 
     def visit_leaf_node(self, leaf_node: DecisionNode) -> None:
+        print("Visitor para contar folhas chegou em uma folha e contou ela")
         self._leaf_count += 1
+
+
+class EstimateDatapointValueVisitor(TreeVisitor):
+    def __init__(self, datapoint):
+        self._datapoint = datapoint
+        self._assigned_value = None
     
+    @property
+    def value(self) -> int:
+        return self._assigned_value
+    
+    def visit_decision_node(self, decision_node:DecisionNode) -> Node:
+        print("Visitor para regredir um ponto está fazendo a comparação com o datapoint para decidir o valor regredido...")
+        decision_node.get_children()[0].accept(self)
+    
+    def visit_leaf_node(self, leaf_node: DecisionNode) -> None:
+        print("Visitor para regredir um ponto estimou o valor para ele")
+        self._assigned_value = leaf_node.value

@@ -1,4 +1,5 @@
-from tree_design import (TreeBuilder, CountLeavesVisitor,
+from tree_design import (TreeBuilder, CountLeavesVisitor, 
+                         EstimateDatapointValueVisitor,
                          InvalidBuildOperationError, NotACompositeError)
 
 # Demonstrando o uso de TreeBuilder. Ele vai criar uma árvore mock para o teste
@@ -52,6 +53,7 @@ try:
 except InvalidBuildOperationError as e:
     print(f"Builder lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 print("")
+print("")
 
 # Testando operações que tanto composite quanto leaf implementam
 leaf = tree_root.get_children()[1]
@@ -73,7 +75,7 @@ try:
 except NotACompositeError as e:
     print(f"Leaf lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 print("")
-
+print("")
 
 # Testando iteradores
 dfs_iterator = tree_root.get_dfs_iterator()
@@ -94,10 +96,24 @@ while not bfs_iterator.finished:
     node = bfs_iterator.next_item()
     print(f"Nó de índice {idx} é do tipo {type(node)} com id {id(node)}")
 print("")
+print("")
 
 # Por último, testando os visitors
 count_leaves_algorithm = CountLeavesVisitor()
 print(f"Tipo do visitor: {type(count_leaves_algorithm)}")
 print(f"Número de folhas contadas antes do accept: {count_leaves_algorithm.leaf_count}")
+print("")
 tree_root.accept(count_leaves_algorithm)
 print(f"Número de folhas contadas depois do accept: {count_leaves_algorithm.leaf_count}")
+print("")
+
+
+# Simulando um visitor mais complexo para testar
+estimate_value_algorithm = EstimateDatapointValueVisitor("datapoint_4")
+print(f"Tipo do visitor: {type(estimate_value_algorithm)}")
+print(f"Valor estimado antes do accept: {estimate_value_algorithm.value}")
+print("")
+tree_root.accept(estimate_value_algorithm)
+print(f"Valor estimado depois do accept: {estimate_value_algorithm.value}")
+# O print continua sendo none, mas isso porque é mock e a folha não tem valor
+
