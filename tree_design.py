@@ -258,7 +258,7 @@ class TreeBFSIterator(TreeIterator):
         return len(self._queue) == 0
 
     def current_item(self):
-        return self._stack[-1]
+        return self._stack[0]
 
     def next_item(self):
         if len(self._queue) == 0:
@@ -273,6 +273,7 @@ class TreeBFSIterator(TreeIterator):
 
         self._current_index += 1
         return current
+
 
 # Visitors para executar algorítmos
 class TreeVisitor(ABC):

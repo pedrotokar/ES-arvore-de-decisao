@@ -76,3 +76,33 @@ então usar um singleton nessas subclasses, mas isso não foi feito por fugir do
 escopo do trabalho.
 
 ### Navegação na árvore
+
+A navegação na árvore é feita usando o padrão [iterator](https://github.com/pedrotokar/engenharia-software/blob/master/resumos/iterator.md). 
+A classe abstrata `TreeIterator` define o que um iterador precisa implementar:
+uma contagem de elementos percorridos, uma forma de obter o elemento atual e
+uma forma de avançar na iteração. Seria possível, com mais esforço e 
+complexidade nos iteradores, adicionar métodos para retornar os elementos
+também.
+
+Dois iteradores foram implementados: o por BFS e o por DFS. Eles são obtidos
+por métodos que existem tanto nas folhas quanto nos nós da árvore, mas o
+esperado é que sejam obtidos da raiz dela. Cada um utiliza sua própria
+estrutura interna para coordenar a iteração, e o cliente não precisa se
+preocupar com isso. Nenhum deles altera o estado da árvore, o que é desejado
+nesse padrão.
+
+Os iteradores implementados não utilizaram ferramentas próprias de python, mas
+seria possível utiliza-los com o loop `for` nativo em python acrescentando
+os métodos `__iter__` e `__next__`:
+
+```py
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        return self.next_item()
+```
+
+Também é possível adicionar o método `__iter__` nos nós, fazendo ele retornar
+algum dos dois iteradores implementados.
+
