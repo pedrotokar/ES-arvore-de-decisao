@@ -1,10 +1,10 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 class notACompositeError(Exception):
     pass
 
-class InvalidBuildOperation(Exception):
+class InvalidBuildOperationError(Exception):
     pass
 
 # ==================================================== #
@@ -46,7 +46,8 @@ class Node(ABC):
     @abstractmethod
     def setSplitInformation(self, split_column: str, threshold: float) -> None: ...
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def value(self) -> float: ...
 
 
@@ -72,7 +73,7 @@ class DecisionNode(Node):
             raise TypeError("Tried to set a non-node object as a node in the tree")
 
     def get_children(self) -> tuple[Node, Node]:
-        return (self.set_left_child, self.set_right_child)
+        return (self.left_node, self.right_node)
 
 
     def getSplitInformation(self):
@@ -81,6 +82,7 @@ class DecisionNode(Node):
     def setSplitInformation(self, split_column: str, threshold: float) -> None:
         print("Mudando como o nó faz o split...")
 
+    @property
     def value(self) -> float:
         print("Calculando valor de retorno de uma divisão com base nas folhas dela...")
 
@@ -92,6 +94,7 @@ class LeafNode(Node):
     def setSplitInformation(self, split_column: str, threshold: float) -> None:
         raise notACompositeError("Tried to get a split rule from a leaf")
     
+    @property
     def value(self) -> float:
         print("Calculando o valor de uma folha com base nos datapoints dela...")
 
@@ -157,12 +160,12 @@ class SplittingState(TreeBuilderState):
         return context._treeRoot
 
     def prune_tree(self, context: TreeBuilder):
-        raise InvalidBuildOperation("Tried to prune a tree that wasn't split yet")
+        raise InvalidBuildOperationError("Tried to prune a tree that wasn't split yet")
 
 
 class PruningState(TreeBuilderState):
     def split_tree(self, context: TreeBuilder):
-        raise InvalidBuildOperation("Tried to split a tree that was already splitten")
+        raise InvalidBuildOperationError("Tried to split a tree that was already splitten")
 
     def prune_tree(self, context: TreeBuilder):
         print("Prunning the tree...")
@@ -175,10 +178,10 @@ class PruningState(TreeBuilderState):
 
 class FinishedState(TreeBuilderState):
     def split_tree(self, context: TreeBuilder):
-        raise InvalidBuildOperation("Tried to split a tree that was already splitten and pruned")
+        raise InvalidBuildOperationError("Tried to split a tree that was already splitten and pruned")
 
     def prune_tree(self, context: TreeBuilder):
-        raise InvalidBuildOperation("Tried to prune a tree that was already splitten and pruned")
+        raise InvalidBuildOperationError("Tried to prune a tree that was already splitten and pruned")
 
 # Iterator da árvore como um todo
 # Serão retornados por algum nó quando solicitado
