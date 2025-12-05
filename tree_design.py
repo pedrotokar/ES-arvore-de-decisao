@@ -270,7 +270,7 @@ class TreeBFSIterator(TreeIterator):
         return len(self._queue) == 0
 
     def current_item(self) -> Node:
-        return self._stack[0]
+        return self._queue[0]
 
     def next_item(self) -> Node:
         if len(self._queue) == 0:
