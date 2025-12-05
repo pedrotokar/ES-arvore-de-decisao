@@ -120,3 +120,29 @@ os métodos `__iter__` e `__next__`:
 Também é possível adicionar o método `__iter__` nos nós, fazendo ele retornar
 algum dos dois iteradores implementados.
 
+### Execução de algorítmos na árvore
+
+Os algorítmos que podem ser executados na árvore são representados por
+[visitors](https://github.com/pedrotokar/engenharia-software/blob/master/resumos/visitor.md).
+Todos os visitors devem implementar os métodos `visit_leaf_node` e 
+`visit_decision_node`, com o comportamento do algorítmo nesses nós. Igualmente,
+os nós implementam `accept` chamando o método `visit_*` apropriado para
+eles.
+
+O livro do GoF afirma que no padrão visitor, a responsabilidade de fazer o
+visitor percorrer a estrutura de objetos é deles mesmos, no método `accept`
+de composites (página 312/313). No caso da implementação feita para a árvore,
+essa responsabilidade foi colocada no próprio visitor. Com isso, o visitor pode
+definir seu próprio trajeto, o que é essencial para algorítmos de árvore, como
+a realização de uma previsão para um datapoint. Como só há dois tipos de
+Node e apenas um dele é composite, o código para achar o próprio percurso
+não precisa ser replicado muitas vezes, suavizando a principal desvantagem
+dessa abordagem.
+
+Visitors feitos futuramente podem ou esperar que um iterador defina a
+trajetória deles ou implementar sua própria trajetória, mas não podem esperar
+que os composites propaguem eles pelas estruturas. Seria possível utilizar
+visitors durante a lógica de split e pruning da árvore, como por exemplo com um
+`SplitLeafVisitor` usado pelos métodos que fazem isso.
+
+
