@@ -42,4 +42,34 @@ padrão) envolve a inspeção de critérios de divisão da árvore, de quais
 valores um nó retorna e quais datapoints do treino estão naquela ramificação
 da árvore.
 
+### Construção da árvore
 
+A árvore é construida com o auxilio de uma classe `TreeBuilder`. Ela contém
+os métodos `start_splitting` e `start_pruning`, e é inicializadda com o dataset
+que será usado para fazer a árvore. Cada método inicia a respectiva etapa de
+construção da árvore, e retorna a árvore resultante da etapa (que também pode
+ser acessada por uma propriedade do `treeBuilder`). A ideia é que cada
+instância de `treeBuilder` só seja capaz de inicializar uma única árvore, e não
+repetir as etapas nela. Se for desejado fazer outra árvore, outra instância de
+`treeBuilder` deve ser inicializada. Uma árvore também não pode ser podada
+antes de ter sido criada.
+
+Esse comportamento é atingido por meio do padrão State. Aqui, a classe
+`TreeBuilder` equivale ao contexto, e só pode ter três estados: a árvore estar
+pronta para ser criada, pronta para ser podada ou já finalizada. Uma classe
+abstrata `treeBuilderState` define os métodos para subclasses dela, que
+representam esses três estados, efetivamente implementarem. Esses métodos são
+expostos na classe `treeBuilder`, mas ela basicamente delega eles para a
+subclasse de `treeBuilderState` que estiver setada como seu estado atual.
+
+O estado de poda, por exemplo, não permite que uma chamada para criar a árvore
+funcione, e lança uma exceção caso isso seja feito. Em compensação, outros
+estados também não permitem a chamada para podar a árvore, e apenas o estado
+de poda efetivamente implementa isso. O último estado, `FinishedState`, não
+permite nenhuma chamada, já que a árvore está finalizada e não há o que mexer
+nela.
+
+As instâncias de estados não mantém informações sobre a árvore armazenadas
+nelas mesmas, e sim usam a instância de `TreeBuilder` para isso. Seria possível
+então usar um singleton nessas subclasses, mas isso não foi feito por fugir do
+escopo do trabalho.
