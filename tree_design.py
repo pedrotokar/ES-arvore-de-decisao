@@ -4,18 +4,17 @@ from abc import ABC, abstractmethod, abstractproperty
 class notACompositeError(Exception):
     pass
 
-# Árvore (com o padrão composite) =============================================
+class InvalidBuildOperation(Exception):
+    pass
 
-# Para evitar que operações de nó sejam feitas nas folhas, adaptei a estratégia
-# do "getComposite" apresentada no livro. Mas no lugar de retornar algo
-# que permita ao cliente usar os métodos de coleção, fiz um método isComposite
-# que retorna uma flag dizendo se o objeto é ou não coleção. O cliente vai ler
-# essa flag enquanto faz suas operações, e caso use uma operação onde não
-# deveria, um erro vai ser lançado. (página 164/165 do GOF)
+# ==================================================== #
+#           Árvore (com o padrão composite)            #
+# ==================================================== #
+
 class Node(ABC):
     def  __init__(self, datapoints: list):
         self._datapoints = datapoints
-        
+
     @property
     def datapointCount(self) -> int:
         return len(self._datapoints)
@@ -24,7 +23,9 @@ class Node(ABC):
     def datapoints(self) -> list:
         return self._datapoints
 
-    #interfaces de composite
+    # Interfaces de composite
+    # elas oferecem uma implementação padrão para folhas. Então só subclasses
+    # que são composite precisam sobreescrever.
     def is_composite(self):
         return False
 
@@ -37,7 +38,8 @@ class Node(ABC):
     def get_children(self) -> tuple[Node, Node]:
         raise notACompositeError("Tried to access children from a node that isn't a composite")
 
-    #interfaces das operações de nós e folhas
+    # Interfaces das operações de nós e folhas, tanto composites quanto folhas
+    # tem que sobreescrever.
     @abstractmethod
     def getSplitInformation(self) -> tuple[str, float]: ...
 
@@ -93,23 +95,90 @@ class LeafNode(Node):
     def value(self) -> float:
         print("Calculando o valor de uma folha com base nos datapoints dela...")
 
+# ==================================================== #
+#         Construção da árvore (padrão state)          #
+# ==================================================== #
 
-# TreeBuilder e os states
-class TreeBuilder: #context
-    pass
+# Equivale ao Context
+class TreeBuilder:
+    def __init__(self, dataset):
+        self._dataset = dataset
+        self._treeRoot = None
+        self._state = SplittingState() # toda construção de árvore começa pelo split
+    
+    @property
+    def dataset(self):
+        return self._dataset
+    
+    @property
+    def tree(self):
+        return self._treeRoot
+    
+    def start_split(self) -> Node:
+        return self._state.split_tree(self)
+    
+    def start_prune(self) -> Node:
+        return self._state.prune_tree(self)
+
 
 class TreeBuilderState(ABC):
-    pass
-    #terá os mesmos métodos de tree builder
+    @abstractmethod
+    def split_tree(self, context: TreeBuilder): ...
+
+    @abstractmethod
+    def prune_tree(self, context: TreeBuilder): ...
+
 
 class SplittingState(TreeBuilderState):
-    pass
+    def split_tree(self, context: TreeBuilder):
+        print("Fazendo split da árvore... Adicionando nós...")
+        
+        # criando uma estrutura mock pra poder testar outras coisas depois
+        context._treeRoot = DecisionNode(context.dataset)
+        context._treeRoot.setSplitInformation("coluna_1", 9)
 
-class StoppingState(TreeBuilderState):
-    pass
+        # na prática os nós teriam cada um um subset do dataset, com os
+        # subsets respeitando a hierarquia. Mas isso é só um mock
+        other_node = DecisionNode(context.dataset)
+        other_node.setSplitInformation("coluna_2", 5)
 
-class PrunningState(TreeBuilderState):
-    pass
+        leaf_node_1 = LeafNode(context.dataset)
+        leaf_node_2 = LeafNode(context.dataset)
+        leaf_node_3 = LeafNode(context.dataset)
+
+        other_node.set_left_child(leaf_node_1)
+        other_node.set_right_child(leaf_node_2)
+        context._treeRoot.set_left_child(other_node)
+        context._treeRoot.set_right_child(leaf_node_3)
+
+        # a mudança de estado é atomica: essa única linha faz isso.
+        # assim evito estados inválidos
+        context._state = PruningState()
+        return context._treeRoot
+
+    def prune_tree(self, context: TreeBuilder):
+        raise InvalidBuildOperation("Tried to prune a tree that wasn't split yet")
+
+
+class PruningState(TreeBuilderState):
+    def split_tree(self, context: TreeBuilder):
+        raise InvalidBuildOperation("Tried to split a tree that was already splitten")
+
+    def prune_tree(self, context: TreeBuilder):
+        print("Prunning the tree...")
+        # aqui não estou fazendo nada. Mas estaria executando um algorítmo para
+        # fazer prunning na árvore.
+
+        context._state = FinishedState()
+        return context._treeRoot
+
+
+class FinishedState(TreeBuilderState):
+    def split_tree(self, context: TreeBuilder):
+        raise InvalidBuildOperation("Tried to split a tree that was already splitten and pruned")
+
+    def prune_tree(self, context: TreeBuilder):
+        raise InvalidBuildOperation("Tried to prune a tree that was already splitten and pruned")
 
 # Iterator da árvore como um todo
 # Serão retornados por algum nó quando solicitado

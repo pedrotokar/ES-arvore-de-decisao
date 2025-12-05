@@ -8,10 +8,11 @@ de árvores de decisão.
 ### Estrutura da árvore
 
 A árvore de decisão é a parte central do projeto e foi modelada utilizando o
-padrão composite. O padrão estabelece uma forma de compartilhar interfaces
-entre diferentes objetos que fazem parte de uma estrutura hierárquica. Com o
-padrão, o cliente pode utilizar intercambiavelmente as interfaces, independente
-do objeto manipulado ser uma folha ou uma coleção de outros objetos.
+padrão [composite](https://github.com/pedrotokar/engenharia-software/blob/master/resumos/composite.md). 
+O padrão estabelece uma forma de compartilhar interfaces entre diferentes
+objetos que fazem parte de uma estrutura hierárquica. Com o padrão, o cliente
+pode utilizar intercambiavelmente as interfaces, independente do objeto
+manipulado ser uma folha ou uma coleção de outros objetos.
 
 No caso do projeto atual, foi definida uma classe `Node`, equivalente a classe
 `Component` do padrão. Essa classe define métodos para navegação de filhos em
@@ -33,7 +34,8 @@ se encaixa como uma `Leaf`) e os nós de decisão são representados pela
 subclasse `DecisionNode` (que no padrão se encaixa como um `Composite`). Os
 `DecisionNode` sobreescrevem os métodos de navegação para permitir a adição
 de nós. Como se trata de uma árvore de decisão simples, os métodos consideram
-uma árvore binária (ou seja, o `Composite` só tem duas childs.)
+uma árvore binária (ou seja, o `Composite` só tem duas childs.), já que
+árvores mais complexas podem ser reduzidas para árvores binárias.
 
 A interface comum para nós e folhas (equivalente ao método `Operation()` do
 padrão) envolve a inspeção de critérios de divisão da árvore, de quais
