@@ -27,7 +27,7 @@ class Node(ABC):
     # Interfaces de composite
     # elas oferecem uma implementação padrão para folhas. Então só subclasses
     # que são composite precisam sobreescrever.
-    def is_composite(self):
+    def is_composite(self) -> bool:
         return False
 
     def set_left_child(self, child: Node) -> None:
@@ -52,10 +52,10 @@ class Node(ABC):
     def value(self) -> float: ...
 
     # Interface para obter iteradores
-    def get_dfs_iterator(self):
+    def get_dfs_iterator(self) -> TreeDFSIterator:
         return TreeDFSIterator(self)
 
-    def get_bfs_iterator(self):
+    def get_bfs_iterator(self) -> TreeBFSIterator:
         return TreeBFSIterator(self)
 
     # Interface para receber visitors
@@ -64,12 +64,12 @@ class Node(ABC):
 
 
 class DecisionNode(Node):
-    def __init__(self, datapoints):
+    def __init__(self, datapoints: list):
         super().__init__(datapoints)
         self.left_node = None
         self.right_node = None
 
-    def is_composite(self):
+    def is_composite(self) -> bool:
         return True
 
     def set_left_child(self, child: Node) -> None:
@@ -88,7 +88,7 @@ class DecisionNode(Node):
         return (self.left_node, self.right_node)
 
 
-    def get_split_information(self):
+    def get_split_information(self) -> tuple[str, float]:
         print("Retornando informações sobre o split de um nó específico...")
 
     def set_split_information(self, split_column: str, threshold: float) -> None:
@@ -103,7 +103,7 @@ class DecisionNode(Node):
 
 
 class LeafNode(Node):
-    def get_split_information(self):
+    def get_split_information(self) -> tuple[str, float]:
         raise NotACompositeError("Tried to set a split rule in a leaf")
 
     def set_split_information(self, split_column: str, threshold: float) -> None:
@@ -122,7 +122,7 @@ class LeafNode(Node):
 
 # Equivale ao Context
 class TreeBuilder:
-    def __init__(self, dataset):
+    def __init__(self, dataset: list):
         self._dataset = dataset
         self._tree_root = None
         self._state = SplittingState() # toda construção de árvore começa pelo split
@@ -261,7 +261,7 @@ class TreeDFSIterator(TreeIterator):
 
 
 class TreeBFSIterator(TreeIterator):
-    def __init__(self, tree_root):
+    def __init__(self, tree_root: Node):
         super().__init__(tree_root)
         self._queue = [tree_root]
 
@@ -292,10 +292,10 @@ class TreeBFSIterator(TreeIterator):
 
 class TreeVisitor(ABC):
     @abstractmethod
-    def visit_decision_node(self, decision_node: DecisionNode): ...
+    def visit_decision_node(self, decision_node: DecisionNode) -> None: ...
 
     @abstractmethod
-    def visit_leaf_node(self, leaf_node: DecisionNode): ...
+    def visit_leaf_node(self, leaf_node: LeafNode) -> None: ...
 
 class CountLeavesVisitor(TreeVisitor):
     def __init__(self):
@@ -311,13 +311,13 @@ class CountLeavesVisitor(TreeVisitor):
         node_children[0].accept(self)
         node_children[1].accept(self)
 
-    def visit_leaf_node(self, leaf_node: DecisionNode) -> None:
+    def visit_leaf_node(self, leaf_node: LeafNode) -> None:
         print("Visitor para contar folhas chegou em uma folha e contou ela")
         self._leaf_count += 1
 
 
 class EstimateDatapointValueVisitor(TreeVisitor):
-    def __init__(self, datapoint):
+    def __init__(self, datapoint: str):
         self._datapoint = datapoint
         self._assigned_value = None
     
@@ -325,10 +325,10 @@ class EstimateDatapointValueVisitor(TreeVisitor):
     def value(self) -> int:
         return self._assigned_value
     
-    def visit_decision_node(self, decision_node:DecisionNode) -> Node:
+    def visit_decision_node(self, decision_node:DecisionNode) -> None:
         print("Visitor para regredir um ponto está fazendo a comparação com o datapoint para decidir o valor regredido...")
         decision_node.get_children()[0].accept(self)
     
-    def visit_leaf_node(self, leaf_node: DecisionNode) -> None:
+    def visit_leaf_node(self, leaf_node: LeafNode) -> None:
         print("Visitor para regredir um ponto estimou o valor para ele")
         self._assigned_value = leaf_node.value
