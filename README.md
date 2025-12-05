@@ -1,9 +1,23 @@
 # Projeto de Modelagem: Árvores de decisão
 
-O intuito deste repositório é demonstrar a modelagem de classes de um sistema
-de árvores de decisão.
+_Pedro Santos Tokar_
 
-## Modelagem
+## Sobre o repositório
+
+O intuito deste repositório é demonstrar a modelagem de classes de um sistema
+de árvores de decisão. Essa foi uma atividade passada durante a matéria de
+Engenharia de Software, do 6º período da graduação em Ciência de Dados e Inteligência Artificial da FGV EMAp. O enunciado da atividade pode ser encontrado [aqui](./ProjetoIndividualdeModelagem.pdf)
+
+## Testando as funcionalidades
+
+Para rodar a demonstração da modelagem, basta executar o script `tree_demo.py`.
+Nenhuma biblioteca é necessária.
+
+```sh
+$ python tree_demo.py
+```
+
+## Sobre a Modelagem
 
 ### Estrutura da árvore
 

@@ -1,5 +1,5 @@
-from tree_design import (TreeBuilder, InvalidBuildOperationError,
-                         NotACompositeError)
+from tree_design import (TreeBuilder, CountLeavesVisitor,
+                         InvalidBuildOperationError, NotACompositeError)
 
 # Demonstrando o uso de TreeBuilder. Ele vai criar uma árvore mock para o teste
 # das demais funcionalidades ser feito.
@@ -53,7 +53,7 @@ except InvalidBuildOperationError as e:
     print(f"Builder lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 print("")
 
-#Testando operações que tanto composite quanto leaf implementam
+# Testando operações que tanto composite quanto leaf implementam
 leaf = tree_root.get_children()[1]
 print(f"A raiz é composite? {tree_root.is_composite()}")
 print(f"A folha é composite? {leaf.is_composite()}")
@@ -63,7 +63,7 @@ print(tree_root.datapoints)
 print(leaf.datapoints)
 print("")
 
-#Testando erros para operações de composite nas leafs
+# Testando erros para operações de composite nas leafs
 try:
     leaf.get_children()
 except NotACompositeError as e:
@@ -75,7 +75,7 @@ except NotACompositeError as e:
 print("")
 
 
-#Testando iteradores
+# Testando iteradores
 dfs_iterator = tree_root.get_dfs_iterator()
 print(f"Iterador é do tipo {type(dfs_iterator)}")
 
@@ -85,7 +85,7 @@ while not dfs_iterator.finished:
     print(f"Nó de índice {idx} é do tipo {type(node)} com id {id(node)}")
 print("")
 
-#verificando se outro iterador itera em outra ordem
+# Verificando se outro iterador itera em outra ordem
 bfs_iterator = tree_root.get_bfs_iterator()
 print(f"Iterador é do tipo {type(bfs_iterator)}")
 
@@ -93,3 +93,11 @@ while not bfs_iterator.finished:
     idx = bfs_iterator.index
     node = bfs_iterator.next_item()
     print(f"Nó de índice {idx} é do tipo {type(node)} com id {id(node)}")
+print("")
+
+# Por último, testando os visitors
+count_leaves_algorithm = CountLeavesVisitor()
+print(f"Tipo do visitor: {type(count_leaves_algorithm)}")
+print(f"Número de folhas contadas antes do accept: {count_leaves_algorithm.leaf_count}")
+tree_root.accept(count_leaves_algorithm)
+print(f"Número de folhas contadas depois do accept: {count_leaves_algorithm.leaf_count}")

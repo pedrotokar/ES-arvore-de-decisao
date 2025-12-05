@@ -58,6 +58,11 @@ class Node(ABC):
     def get_bfs_iterator(self):
         return TreeBFSIterator(self)
 
+    # Interface para receber visitors
+    @abstractmethod
+    def accept(self, visitor: TreeVisitor) -> None: ...
+
+
 class DecisionNode(Node):
     def __init__(self, datapoints):
         super().__init__(datapoints)
@@ -93,6 +98,9 @@ class DecisionNode(Node):
     def value(self) -> float:
         print("Calculando valor de retorno de uma divisão com base nas folhas dela...")
 
+    def accept(self, visitor: TreeVisitor) -> None:
+        visitor.visit_decision_node(self)
+
 
 class LeafNode(Node):
     def get_split_information(self):
@@ -104,6 +112,9 @@ class LeafNode(Node):
     @property
     def value(self) -> float:
         print("Calculando o valor de uma folha com base nos datapoints dela...")
+
+    def accept(self, visitor: TreeVisitor) -> None:
+        visitor.visit_leaf_node(self)
 
 # ==================================================== #
 #         Construção da árvore (padrão state)          #
@@ -133,14 +144,14 @@ class TreeBuilder:
 
 class TreeBuilderState(ABC):
     @abstractmethod
-    def split_tree(self, context: TreeBuilder): ...
+    def split_tree(self, context: TreeBuilder) -> Node: ...
 
     @abstractmethod
-    def prune_tree(self, context: TreeBuilder): ...
+    def prune_tree(self, context: TreeBuilder) -> Node: ...
 
 
 class SplittingState(TreeBuilderState):
-    def split_tree(self, context: TreeBuilder):
+    def split_tree(self, context: TreeBuilder) -> Node:
         print("Fazendo split da árvore... Adicionando nós...")
         
         # criando uma estrutura mock pra poder testar outras coisas depois
@@ -174,15 +185,15 @@ class SplittingState(TreeBuilderState):
         context._state = PruningState()
         return context._tree_root
 
-    def prune_tree(self, context: TreeBuilder):
+    def prune_tree(self, context: TreeBuilder) -> Node:
         raise InvalidBuildOperationError("Tried to prune a tree that wasn't split yet")
 
 
 class PruningState(TreeBuilderState):
-    def split_tree(self, context: TreeBuilder):
-        raise InvalidBuildOperationError("Tried to split a tree that was already splitten")
+    def split_tree(self, context: TreeBuilder) -> Node:
+        raise InvalidBuildOperationError("Tried to split a tree that was already split")
 
-    def prune_tree(self, context: TreeBuilder):
+    def prune_tree(self, context: TreeBuilder) -> Node:
         print("Prunning the tree...")
         # aqui não estou fazendo nada. Mas estaria executando um algorítmo para
         # fazer prunning na árvore.
@@ -192,10 +203,10 @@ class PruningState(TreeBuilderState):
 
 
 class FinishedState(TreeBuilderState):
-    def split_tree(self, context: TreeBuilder):
+    def split_tree(self, context: TreeBuilder) -> Node:
         raise InvalidBuildOperationError("Tried to split a tree that was already splitten and pruned")
 
-    def prune_tree(self, context: TreeBuilder):
+    def prune_tree(self, context: TreeBuilder) -> Node:
         raise InvalidBuildOperationError("Tried to prune a tree that was already splitten and pruned")
 
 # ==================================================== #
@@ -203,38 +214,38 @@ class FinishedState(TreeBuilderState):
 # ==================================================== #
 
 class TreeIterator(ABC):
-    def __init__(self, tree_root):
+    def __init__(self, tree_root: Node):
         self._tree_root = tree_root
         self._current_index = 0
 
     @property
-    def index(self):
+    def index(self) -> int:
         return self._current_index
 
     @property
     @abstractmethod
-    def finished(self): ...
+    def finished(self) -> bool: ...
 
     @abstractmethod
-    def current_item(self): ...
+    def current_item(self) -> Node: ...
 
     @abstractmethod
-    def next_item(self): ...
+    def next_item(self) -> Node: ...
 
 
 class TreeDFSIterator(TreeIterator):
-    def __init__(self, tree_root):
+    def __init__(self, tree_root: Node):
         super().__init__(tree_root)
         self._stack = [tree_root]
 
     @property
-    def finished(self):
+    def finished(self) -> bool:
         return len(self._stack) == 0
 
-    def current_item(self):
+    def current_item(self) -> Node:
         return self._stack[-1]
 
-    def next_item(self):
+    def next_item(self) -> Node:
         if len(self._stack) == 0:
             raise RuntimeError("Tried to iterate on a exausthed iterator")
 
@@ -248,19 +259,20 @@ class TreeDFSIterator(TreeIterator):
         self._current_index += 1
         return current
 
+
 class TreeBFSIterator(TreeIterator):
     def __init__(self, tree_root):
         super().__init__(tree_root)
         self._queue = [tree_root]
 
     @property
-    def finished(self):
+    def finished(self) -> bool:
         return len(self._queue) == 0
 
-    def current_item(self):
+    def current_item(self) -> Node:
         return self._stack[0]
 
-    def next_item(self):
+    def next_item(self) -> Node:
         if len(self._queue) == 0:
             raise RuntimeError("Tried to iterate on a exausthed iterator")
 
@@ -274,13 +286,31 @@ class TreeBFSIterator(TreeIterator):
         self._current_index += 1
         return current
 
+# ==================================================== #
+#  Execução de algorítmos na árvore (padrão visitor)   #
+# ==================================================== #
 
-# Visitors para executar algorítmos
 class TreeVisitor(ABC):
-    pass
+    @abstractmethod
+    def visit_decision_node(self, decision_node: DecisionNode): ...
 
-class DepthVisitor(TreeVisitor):
-    pass
+    @abstractmethod
+    def visit_leaf_node(self, leaf_node: DecisionNode): ...
 
 class CountLeavesVisitor(TreeVisitor):
-    pass
+    def __init__(self):
+        self._leaf_count = 0
+    
+    @property
+    def leaf_count(self) -> int:
+        return self._leaf_count
+    
+    def visit_decision_node(self, decision_node: DecisionNode) -> None:
+        print("Visitor para contar folhas está se propagando na árvore")
+        node_children = decision_node.get_children()
+        node_children[0].accept(self)
+        node_children[1].accept(self)
+
+    def visit_leaf_node(self, leaf_node: DecisionNode) -> None:
+        self._leaf_count += 1
+    
