@@ -51,6 +51,12 @@ class Node(ABC):
     @abstractmethod
     def value(self) -> float: ...
 
+    # Interface para obter iteradores
+    def get_dfs_iterator(self):
+        return TreeDFSIterator(self)
+
+    def get_bfs_iterator(self):
+        return TreeBFSIterator(self)
 
 class DecisionNode(Node):
     def __init__(self, datapoints):
@@ -107,7 +113,7 @@ class LeafNode(Node):
 class TreeBuilder:
     def __init__(self, dataset):
         self._dataset = dataset
-        self._treeRoot = None
+        self._tree_root = None
         self._state = SplittingState() # toda construção de árvore começa pelo split
     
     @property
@@ -116,7 +122,7 @@ class TreeBuilder:
     
     @property
     def tree(self):
-        return self._treeRoot
+        return self._tree_root
     
     def start_split(self) -> Node:
         return self._state.split_tree(self)
@@ -138,27 +144,35 @@ class SplittingState(TreeBuilderState):
         print("Fazendo split da árvore... Adicionando nós...")
         
         # criando uma estrutura mock pra poder testar outras coisas depois
-        context._treeRoot = DecisionNode(context.dataset)
-        context._treeRoot.set_split_information("coluna_1", 9)
+        context._tree_root = DecisionNode(context.dataset)
+        context._tree_root.set_split_information("coluna_1", 9)
 
         # na prática os nós teriam cada um um subset do dataset, com os
         # subsets respeitando a hierarquia. Mas isso é só um mock
-        other_node = DecisionNode(context.dataset)
-        other_node.set_split_information("coluna_2", 5)
+        decision_node_1 = DecisionNode(context.dataset)
+        decision_node_1.set_split_information("coluna_2", 5)
+
+        decision_node_2 = DecisionNode(context.dataset)
+        decision_node_2.set_split_information("coluna_3", -42)
 
         leaf_node_1 = LeafNode(context.dataset)
         leaf_node_2 = LeafNode(context.dataset)
         leaf_node_3 = LeafNode(context.dataset)
+        leaf_node_4 = LeafNode(context.dataset)
 
-        other_node.set_left_child(leaf_node_1)
-        other_node.set_right_child(leaf_node_2)
-        context._treeRoot.set_left_child(other_node)
-        context._treeRoot.set_right_child(leaf_node_3)
+        decision_node_1.set_left_child(leaf_node_1)
+        decision_node_1.set_right_child(leaf_node_2)
+        
+        decision_node_2.set_left_child(decision_node_1)
+        decision_node_2.set_right_child(leaf_node_3)
+
+        context._tree_root.set_left_child(decision_node_2)
+        context._tree_root.set_right_child(leaf_node_4)
 
         # a mudança de estado é atomica: essa única linha faz isso.
         # assim evito estados inválidos
         context._state = PruningState()
-        return context._treeRoot
+        return context._tree_root
 
     def prune_tree(self, context: TreeBuilder):
         raise InvalidBuildOperationError("Tried to prune a tree that wasn't split yet")
@@ -174,7 +188,7 @@ class PruningState(TreeBuilderState):
         # fazer prunning na árvore.
 
         context._state = FinishedState()
-        return context._treeRoot
+        return context._tree_root
 
 
 class FinishedState(TreeBuilderState):
@@ -189,13 +203,76 @@ class FinishedState(TreeBuilderState):
 # ==================================================== #
 
 class TreeIterator(ABC):
-    pass
+    def __init__(self, tree_root):
+        self._tree_root = tree_root
+        self._current_index = 0
 
-class PreOrderIterator(TreeIterator):
-    pass
+    @property
+    def index(self):
+        return self._current_index
 
-class BFSIterator(TreeIterator):
-    pass
+    @property
+    @abstractmethod
+    def finished(self): ...
+
+    @abstractmethod
+    def current_item(self): ...
+
+    @abstractmethod
+    def next_item(self): ...
+
+
+class TreeDFSIterator(TreeIterator):
+    def __init__(self, tree_root):
+        super().__init__(tree_root)
+        self._stack = [tree_root]
+
+    @property
+    def finished(self):
+        return len(self._stack) == 0
+
+    def current_item(self):
+        return self._stack[-1]
+
+    def next_item(self):
+        if len(self._stack) == 0:
+            raise RuntimeError("Tried to iterate on a exausthed iterator")
+
+        current = self._stack.pop()
+
+        if current.is_composite():
+            children = current.get_children()
+            self._stack.append(children[1])
+            self._stack.append(children[0])
+
+        self._current_index += 1
+        return current
+
+class TreeBFSIterator(TreeIterator):
+    def __init__(self, tree_root):
+        super().__init__(tree_root)
+        self._queue = [tree_root]
+
+    @property
+    def finished(self):
+        return len(self._queue) == 0
+
+    def current_item(self):
+        return self._stack[-1]
+
+    def next_item(self):
+        if len(self._queue) == 0:
+            raise RuntimeError("Tried to iterate on a exausthed iterator")
+
+        current = self._queue.pop(0)
+
+        if current.is_composite():
+            children = current.get_children()
+            self._queue.append(children[0])
+            self._queue.append(children[1])
+
+        self._current_index += 1
+        return current
 
 # Visitors para executar algorítmos
 class TreeVisitor(ABC):

@@ -74,3 +74,22 @@ except NotACompositeError as e:
     print(f"Leaf lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 print("")
 
+
+#Testando iteradores
+dfs_iterator = tree_root.get_dfs_iterator()
+print(f"Iterador é do tipo {type(dfs_iterator)}")
+
+while not dfs_iterator.finished:
+    idx = dfs_iterator.index
+    node = dfs_iterator.next_item()
+    print(f"Nó de índice {idx} é do tipo {type(node)} com id {id(node)}")
+print("")
+
+#verificando se outro iterador itera em outra ordem
+bfs_iterator = tree_root.get_bfs_iterator()
+print(f"Iterador é do tipo {type(bfs_iterator)}")
+
+while not bfs_iterator.finished:
+    idx = bfs_iterator.index
+    node = bfs_iterator.next_item()
+    print(f"Nó de índice {idx} é do tipo {type(node)} com id {id(node)}")
