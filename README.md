@@ -6,7 +6,9 @@ _Pedro Santos Tokar_
 
 O intuito deste repositório é demonstrar a modelagem de classes de um sistema
 de árvores de decisão. Essa foi uma atividade passada durante a matéria de
-Engenharia de Software, do 6º período da graduação em Ciência de Dados e Inteligência Artificial da FGV EMAp. O enunciado da atividade pode ser encontrado [aqui](./ProjetoIndividualdeModelagem.pdf)
+Engenharia de Software, do 6º período da graduação em Ciência de Dados e
+Inteligência Artificial da FGV EMAp. O enunciado da atividade pode ser
+encontrado [aqui](./ProjetoIndividualdeModelagem.pdf).
 
 ## Testando as funcionalidades
 
