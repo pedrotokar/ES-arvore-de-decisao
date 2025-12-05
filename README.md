@@ -54,13 +54,14 @@ repetir as etapas nela. Se for desejado fazer outra árvore, outra instância de
 `treeBuilder` deve ser inicializada. Uma árvore também não pode ser podada
 antes de ter sido criada.
 
-Esse comportamento é atingido por meio do padrão State. Aqui, a classe
-`TreeBuilder` equivale ao contexto, e só pode ter três estados: a árvore estar
-pronta para ser criada, pronta para ser podada ou já finalizada. Uma classe
-abstrata `treeBuilderState` define os métodos para subclasses dela, que
-representam esses três estados, efetivamente implementarem. Esses métodos são
-expostos na classe `treeBuilder`, mas ela basicamente delega eles para a
-subclasse de `treeBuilderState` que estiver setada como seu estado atual.
+Esse comportamento é atingido por meio do padrão [state](https://github.com/pedrotokar/engenharia-software/blob/master/resumos/state.md)
+. Aqui, a classe `TreeBuilder` equivale ao contexto, e só pode ter três
+estados: a árvore estar pronta para ser criada, pronta para ser podada ou já
+finalizada. Uma classe abstrata `treeBuilderState` define os métodos para
+subclasses dela, que representam esses três estados, efetivamente 
+implementarem. Esses métodos são expostos na classe `treeBuilder`, mas ela
+basicamente delega eles para a subclasse de `treeBuilderState` que estiver
+setada como seu estado atual.
 
 O estado de poda, por exemplo, não permite que uma chamada para criar a árvore
 funcione, e lança uma exceção caso isso seja feito. Em compensação, outros
@@ -73,3 +74,5 @@ As instâncias de estados não mantém informações sobre a árvore armazenadas
 nelas mesmas, e sim usam a instância de `TreeBuilder` para isso. Seria possível
 então usar um singleton nessas subclasses, mas isso não foi feito por fugir do
 escopo do trabalho.
+
+### Navegação na árvore

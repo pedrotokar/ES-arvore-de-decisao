@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-class notACompositeError(Exception):
+class NotACompositeError(Exception):
     pass
 
 class InvalidBuildOperationError(Exception):
@@ -11,12 +11,13 @@ class InvalidBuildOperationError(Exception):
 #           Árvore (com o padrão composite)            #
 # ==================================================== #
 
+#Equivale ao component
 class Node(ABC):
     def  __init__(self, datapoints: list):
         self._datapoints = datapoints
 
     @property
-    def datapointCount(self) -> int:
+    def datapoint_count(self) -> int:
         return len(self._datapoints)
 
     @property
@@ -30,21 +31,21 @@ class Node(ABC):
         return False
 
     def set_left_child(self, child: Node) -> None:
-        raise notACompositeError("Tried to add a child to a node that isn't a composite")
+        raise NotACompositeError("Tried to add a child to a node that isn't a composite")
 
     def set_right_child(self, child: Node) -> None:
-        raise notACompositeError("Tried to add a child to a node that isn't a composite")
+        raise NotACompositeError("Tried to add a child to a node that isn't a composite")
     
     def get_children(self) -> tuple[Node, Node]:
-        raise notACompositeError("Tried to access children from a node that isn't a composite")
+        raise NotACompositeError("Tried to access children from a node that isn't a composite")
 
     # Interfaces das operações de nós e folhas, tanto composites quanto folhas
     # tem que sobreescrever.
     @abstractmethod
-    def getSplitInformation(self) -> tuple[str, float]: ...
+    def get_split_information(self) -> tuple[str, float]: ...
 
     @abstractmethod
-    def setSplitInformation(self, split_column: str, threshold: float) -> None: ...
+    def set_split_information(self, split_column: str, threshold: float) -> None: ...
 
     @property
     @abstractmethod
@@ -76,10 +77,10 @@ class DecisionNode(Node):
         return (self.left_node, self.right_node)
 
 
-    def getSplitInformation(self):
+    def get_split_information(self):
         print("Retornando informações sobre o split de um nó específico...")
 
-    def setSplitInformation(self, split_column: str, threshold: float) -> None:
+    def set_split_information(self, split_column: str, threshold: float) -> None:
         print("Mudando como o nó faz o split...")
 
     @property
@@ -88,11 +89,11 @@ class DecisionNode(Node):
 
 
 class LeafNode(Node):
-    def getSplitInformation(self):
-        raise notACompositeError("Tried to set a split rule in a leaf")
+    def get_split_information(self):
+        raise NotACompositeError("Tried to set a split rule in a leaf")
 
-    def setSplitInformation(self, split_column: str, threshold: float) -> None:
-        raise notACompositeError("Tried to get a split rule from a leaf")
+    def set_split_information(self, split_column: str, threshold: float) -> None:
+        raise NotACompositeError("Tried to get a split rule from a leaf")
     
     @property
     def value(self) -> float:
@@ -138,12 +139,12 @@ class SplittingState(TreeBuilderState):
         
         # criando uma estrutura mock pra poder testar outras coisas depois
         context._treeRoot = DecisionNode(context.dataset)
-        context._treeRoot.setSplitInformation("coluna_1", 9)
+        context._treeRoot.set_split_information("coluna_1", 9)
 
         # na prática os nós teriam cada um um subset do dataset, com os
         # subsets respeitando a hierarquia. Mas isso é só um mock
         other_node = DecisionNode(context.dataset)
-        other_node.setSplitInformation("coluna_2", 5)
+        other_node.set_split_information("coluna_2", 5)
 
         leaf_node_1 = LeafNode(context.dataset)
         leaf_node_2 = LeafNode(context.dataset)
@@ -183,8 +184,10 @@ class FinishedState(TreeBuilderState):
     def prune_tree(self, context: TreeBuilder):
         raise InvalidBuildOperationError("Tried to prune a tree that was already splitten and pruned")
 
-# Iterator da árvore como um todo
-# Serão retornados por algum nó quando solicitado
+# ==================================================== #
+#        Navegação na árvore (padrão iterator)         #
+# ==================================================== #
+
 class TreeIterator(ABC):
     pass
 

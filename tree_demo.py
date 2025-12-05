@@ -1,5 +1,5 @@
 from tree_design import (TreeBuilder, InvalidBuildOperationError,
-                         notACompositeError)
+                         NotACompositeError)
 
 # Demonstrando o uso de TreeBuilder. Ele vai criar uma árvore mock para o teste
 # das demais funcionalidades ser feito.
@@ -66,10 +66,11 @@ print("")
 #Testando erros para operações de composite nas leafs
 try:
     leaf.get_children()
-except notACompositeError as e:
+except NotACompositeError as e:
     print(f"Leaf lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 try:
-    leaf.getSplitInformation()
-except notACompositeError as e:
+    leaf.get_split_information()
+except NotACompositeError as e:
     print(f"Leaf lançou uma exception por tentar executar uma operação inválida para o estado dele: {e}")
 print("")
+
